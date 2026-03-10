@@ -1,0 +1,1 @@
+web: gunicorn rural_scheme_engine.wsgi
