@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- PAGE HEADER -->
+<div class="text-center mb-5">
+  <h1 class="fw-bold">Rural Government Scheme Eligibility Engine</h1>
+  <p class="text-muted">
+    Find out which government schemes you qualify for based on your personal details.
+  </p>
+</div>
+
+
+<!-- ELIGIBILITY FORM -->
+<div class="row justify-content-center">
+<div class="col-md-8">
+
+<h3 class="mb-3">Check Scheme Eligibility</h3>
+
+<div class="card shadow-lg p-4">
+
+<form method="POST">
+{% csrf_token %}
+
+<div class="row">
+
+<div class="col-md-6 mb-3">
+<label class="form-label">Annual Income</label>
+{{ form.income }}
+</div>
+
+<div class="col-md-6 mb-3">
+<label class="form-label">Age</label>
+{{ form.age }}
+</div>
+
+</div>
+
+<div class="mb-3">
+<label class="form-label">Gender</label>
+{{ form.gender }}
+</div>
+
+<div class="mb-3">
+<label class="form-label">State</label>
+{{ form.state }}
+</div>
+
+<div class="mb-3">
+<label class="form-label">Occupation</label>
+{{ form.occupation }}
+</div>
+
+<div class="mb-3">
+<label class="form-label">Land Ownership</label>
+{{ form.land_ownership }}
+</div>
+
+<div class="mb-3">
+<label class="form-label">Disability Status</label>
+{{ form.disability_status }}
+</div>
+
+<button class="btn btn-primary w-100">
+Check Eligibility
+</button>
+
+</form>
+
+</div>
+</div>
+</div>
+
+
+{% if results %}
+
+<!-- SUMMARY -->
+<div class="alert alert-info mt-5">
+
+<h5 class="mb-2">Eligibility Summary</h5>
+
+Eligible Schemes: <strong>{{ eligible_count }}</strong> <br>
+Not Eligible Schemes: <strong>{{ not_eligible_count }}</strong> <br>
+Total Schemes Checked: <strong>{{ results|length }}</strong>
+
+</div>
+
+
+<!-- RESULTS -->
+<h3 class="mt-4 mb-3">Evaluation Results</h3>
+
+{% for result in results %}
+
+<div class="card mb-3 shadow-sm">
+
+<div class="card-body">
+
+<h5 class="card-title">
+
+{{ result.scheme.name }}
+
+{% if result.is_eligible %}
+<span class="badge bg-success ms-2">Eligible</span>
+{% else %}
+<span class="badge bg-danger ms-2">Not Eligible</span>
+{% endif %}
+
+</h5>
+
+<p class="text-muted mb-3">{{ result.scheme.description }}</p>
+
+
+<ul class="list-group list-group-flush">
+
+{% for rule in result.rules %}
+
+<li class="list-group-item d-flex justify-content-between align-items-center">
+
+<span>
+
+<strong>{{ rule.field_name|title }}</strong>
+
+{% if rule.operator == "eq" %}
+=
+{% elif rule.operator == "lte" %}
+≤
+{% elif rule.operator == "gte" %}
+≥
+{% elif rule.operator == "lt" %}
+<
+{% elif rule.operator == "gt" %}
+>
+{% endif %}
+
+{{ rule.value }}
+
+</span>
+
+{% if rule.passed %}
+<span class="badge bg-success">Passed</span>
+{% else %}
+<span class="badge bg-danger">Failed</span>
+{% endif %}
+
+</li>
+
+{% endfor %}
+
+</ul>
+
+
+<a href="/scheme/{{ result.scheme.id }}/" class="btn btn-outline-primary btn-sm mt-3">
+View Details
+</a>
+
+</div>
+</div>
+
+{% endfor %}
+
+
+<!-- DOWNLOAD REPORT -->
+<div class="mt-4">
+
+<a href="{% url 'download_report' %}" class="btn btn-success">
+Download Eligibility Report (PDF)
+</a>
+
+</div>
+
+{% endif %}
+
+{% endblock %}

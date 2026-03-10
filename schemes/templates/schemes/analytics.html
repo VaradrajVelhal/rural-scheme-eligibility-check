@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2 class="mb-4">Analytics Dashboard</h2>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card p-3 shadow">
+            <h5>Total Users</h5>
+            <h3>{{ total_users }}</h3>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card p-3 shadow">
+            <h5>Total Eligibility Checks</h5>
+            <h3>{{ total_checks }}</h3>
+        </div>
+    </div>
+</div>
+
+<h4>Scheme Popularity</h4>
+<ul class="list-group mb-4">
+    {% for scheme in scheme_stats %}
+        <li class="list-group-item">
+            {{ scheme.scheme__name }} — {{ scheme.total }} checks
+        </li>
+    {% endfor %}
+</ul>
+
+<h4>Eligibility Distribution</h4>
+
+<div class="card p-4 shadow d-flex justify-content-center align-items-center">
+    
+    <div style="width: 350px; height: 350px;">
+        <canvas id="eligibilityChart"></canvas>
+    </div>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const ctx = document.getElementById("eligibilityChart").getContext("2d");
+
+    new Chart(ctx, {
+        type: "pie",
+        data: {
+            labels: ["Eligible", "Not Eligible"],
+            datasets: [{
+                data: [{{ eligible_count }}, {{ not_eligible_count }}],
+                backgroundColor: ["#28a745", "#dc3545"]
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+});
+</script>
+
+{% endblock %}
