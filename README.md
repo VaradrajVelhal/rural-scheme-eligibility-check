@@ -41,6 +41,14 @@ Income ≤ 200000
 Occupation = Farmer
 
 ---
+## Key Highlights
+
+- Dynamic rule engine for eligibility evaluation
+- Supports multiple rule operators (eq, lt, gt, lte, gte)
+- Explanation of eligibility rules
+- PDF eligibility report generation
+- Analytics dashboard using Chart.js
+- Authentication system
 
 ### Eligibility Evaluation
 
