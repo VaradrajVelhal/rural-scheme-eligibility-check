@@ -120,6 +120,8 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / "static",
 ]
+# SESSION_COOKIE_AGE = 1800  # 30 minutes
+# SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 LOGIN_REDIRECT_URL = "/check/"

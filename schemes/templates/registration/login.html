@@ -2,50 +2,45 @@
 
 {% block content %}
 
-<div class="row justify-content-center mt-5">
-
-    <div class="col-md-4">
-
-        <div class="card shadow">
-
-            <div class="card-header bg-primary text-white text-center">
-                <h4>Login</h4>
+<div class="row justify-content-center align-items-center" style="min-height: 60vh;">
+    <div class="col-md-5 col-lg-4">
+        
+        <div class="text-center mb-4">
+            <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle mb-3" style="width: 60px; height: 60px;">
+                <i class="bi bi-person-circle fs-2"></i>
             </div>
+            <h2 class="fw-bold">Welcome Back</h2>
+            <p class="text-secondary small">Log in to manage your eligibility checks.</p>
+        </div>
 
-            <div class="card-body">
+        <div class="card p-4 p-md-5 shadow border-0 rounded-4">
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-4 text-start">
+                    <label class="form-label fw-medium text-dark small">Username</label>
+                    {{ form.username }}
+                </div>
 
-                <form method="post">
-                    {% csrf_token %}
+                <div class="mb-4 text-start">
+                    <label class="form-label fw-medium text-dark small">Password</label>
+                    {{ form.password }}
+                </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Username</label>
-                        {{ form.username }}
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Password</label>
-                        {{ form.password }}
-                    </div>
-
-                    <button type="submit" class="btn btn-primary w-100">
-                        Login
-                    </button>
-
-                </form>
-
-                <hr>
-
-                <p class="text-center">
-                    Don't have an account?
-                    <a href="{% url 'register' %}">Register</a>
-                </p>
-
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-bold shadow-sm">
+                    Log In
+                </button>
+            </form>
+            
+            <div class="text-center mt-4">
+                <span class="text-secondary small">Don't have an account?</span>
+                <a href="{% url 'register' %}" class="fw-medium text-primary text-decoration-none small ms-1 hover-underline">
+                    Create an account
+                </a>
             </div>
-
         </div>
 
     </div>
-
 </div>
 
 {% endblock %}

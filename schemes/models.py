@@ -71,8 +71,5 @@ class UserProfile(models.Model):
 class EligibilityCheck(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     scheme = models.ForeignKey(Scheme, on_delete=models.CASCADE)
-    checked_at = models.DateTimeField(auto_now_add=True)
+    checked_on = models.DateTimeField(auto_now_add=True)
     is_eligible = models.BooleanField(default=False)
-    
-    class Meta:
-        unique_together = ('user', 'scheme')

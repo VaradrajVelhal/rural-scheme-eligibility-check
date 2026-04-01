@@ -2,54 +2,120 @@
 
 {% block content %}
 
-<h2>{{ scheme.name }}</h2>
+<!-- Scheme Header -->
+<div class="card border-0 shadow-soft rounded-4 mb-5 overflow-visible position-relative bg-white" style="border: 1px solid var(--color-border) !important;">
+    <div class="position-absolute top-0 start-0 w-100 {% if is_eligible == True %}bg-success{% elif is_eligible == False %}bg-danger{% else %}bg-primary{% endif %} opacity-10 rounded-top-4" style="height: 100px;"></div>
+    <div class="card-body p-4 p-md-5 position-relative z-1 pt-5">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+            <div class="d-flex align-items-center mb-4 mb-md-0 mt-n4">
+                <div class="bg-white {% if is_eligible == True %}text-success{% elif is_eligible == False %}text-danger{% else %}text-primary{% endif %} rounded-4 d-flex align-items-center justify-content-center me-4 shadow-sm border border-light-subtle" style="width: 80px; height: 80px;">
+                    <i class="bi bi-file-text-fill display-5"></i>
+                </div>
+                <div class="pt-3">
+                    <h2 class="fw-bold mb-2 text-dark lh-sm tracking-wide">{{ scheme.name }}</h2>
+                    <div class="d-flex align-items-center flex-wrap gap-3 mt-2">
+                        {% if is_eligible == True %}
+                            <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-3 py-2 rounded-pill shadow-sm"><i class="bi bi-check-circle-fill me-1"></i> Eligible</span>
+                        {% elif is_eligible == False %}
+                            <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 px-3 py-2 rounded-pill shadow-sm"><i class="bi bi-x-circle-fill me-1"></i> Not Eligible</span>
+                        {% endif %}
 
-<div class="card p-4 shadow mb-4">
-    <h4>Description</h4>
-<p>
-
-{% if request.session.lang == "mr" and scheme.description_mr %}
-  {{ scheme.description_mr }}
-{% elif request.session.lang == "hi" and scheme.description_hi %}
-  {{ scheme.description_hi }}
-{% else %}
-  {{ scheme.description }}
-{% endif %}
-
-</p>
+                        {% if scheme.official_link %}
+                        <a href="{{ scheme.official_link }}" target="_blank" class="btn btn-primary text-white shadow-sm rounded-pill fw-bold d-inline-flex align-items-center hover-lift px-4 py-2" style="background-color: var(--bs-primary); border-color: var(--bs-primary);">
+                            <i class="bi bi-box-arrow-up-right me-2"></i> Official Website
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <div class="pt-md-3">
+                <a href="javascript:history.back()" class="btn btn-outline-secondary bg-white rounded-pill px-4 shadow-sm fw-medium border-light-subtle hover-lift">
+                    <i class="bi bi-arrow-left me-2 fw-bold"></i> Go Back
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 
-<div class="card p-4 shadow mb-4">
-    <h4>Eligibility Rules</h4>
+<div class="row g-4">
+    <!-- Left Column: Description & Documents -->
+    <div class="col-lg-7">
+        
+        <div class="card border-0 shadow-soft rounded-4 mb-4 bg-white" style="border: 1px solid var(--color-border) !important;">
+            <div class="card-body p-4 p-md-5">
+                <h5 class="fw-bold mb-4 d-flex align-items-center text-dark" style="font-size: 1.2rem;">
+                    <i class="bi bi-info-circle-fill text-primary me-3 fs-4"></i> About the Scheme
+                </h5>
+                <p class="text-secondary lh-lg mb-0" style="font-size: 1.05rem;">
+                {% if request.session.lang == "mr" and scheme.description_mr %}
+                  {{ scheme.description_mr }}
+                {% elif request.session.lang == "hi" and scheme.description_hi %}
+                  {{ scheme.description_hi }}
+                {% else %}
+                  {{ scheme.description }}
+                {% endif %}
+                </p>
+            </div>
+        </div>
 
-    <ul>
-        {% for rule in rules %}
-            <li>
-                {{ rule.field_name }} {{ rule.operator }} {{ rule.value }}
-            </li>
-        {% endfor %}
-    </ul>
+        <div class="card border-0 shadow-soft rounded-4 bg-white" style="border: 1px solid var(--color-border) !important;">
+            <div class="card-body p-4 p-md-5">
+                <h5 class="fw-bold mb-4 d-flex align-items-center text-dark" style="font-size: 1.2rem;">
+                    <i class="bi bi-folder2-open text-warning me-3 fs-4"></i> Required Documents
+                </h5>
+                {% if documents %}
+                    <ul class="list-group list-group-flush mt-2">
+                        {% for doc in documents %}
+                            <li class="list-group-item d-flex align-items-center px-0 py-3 border-light-subtle bg-transparent">
+                                <i class="bi bi-check2-square text-primary me-3 fs-5"></i>
+                                <span class="fw-medium text-secondary" style="font-size: 1.05rem;">{{ doc.document_name }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="bg-light rounded-4 p-4 text-center mt-3 border border-light-subtle">
+                        <p class="text-muted small fw-medium mb-0"><i class="bi bi-dash me-1"></i> No specific documents listed.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
 
-</div>
+    </div>
 
-<div class="card p-4 shadow mb-4">
-    <h4>Required Documents</h4>
+    <!-- Right Column: Rules -->
+    <div class="col-lg-5">
+        
+        <div class="card border-0 shadow-soft rounded-4 bg-light" style="border: 1px solid var(--color-border) !important;">
+            <div class="card-body p-4 p-md-5">
+                <h5 class="fw-bold mb-4 d-flex align-items-center text-dark" style="font-size: 1.2rem;">
+                    <i class="bi bi-shield-check text-primary me-3 fs-4"></i> Eligibility Conditions
+                </h5>
 
-    <ul>
-        {% for doc in documents %}
-            <li>{{ doc.document_name }}</li>
-        {% endfor %}
-    </ul>
+                <div class="d-flex flex-column gap-3 mt-4">
+                    {% for rule in rules %}
+                        <div class="bg-white p-3 rounded-4 shadow-sm border border-light-subtle d-flex flex-column hover-lift transition-all">
+                            <span class="d-block text-muted small fw-bold text-uppercase mb-2 tracking-wide" style="font-size: 0.65rem;">
+                                {{ rule.field_name|title }}
+                            </span>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span class="fw-bold text-dark font-monospace" style="font-size: 0.9rem;">
+                                    {% if rule.operator == "eq" %}Must be exactly{% elif rule.operator == "lte" %}Up to{% elif rule.operator == "gte" %}At least{% elif rule.operator == "lt" %}Less than{% elif rule.operator == "gt" %}Greater than{% else %}{{ rule.operator }}{% endif %}
+                                </span>
+                                <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill fs-6 border border-primary border-opacity-10 shadow-sm">
+                                    {{ rule.value }}
+                                </span>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="bg-white rounded-4 p-4 text-center border border-light-subtle">
+                            <p class="text-muted small fw-medium mb-0">No strict rules defined for this scheme.</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
 
-</div>
-
-<div class="mt-3">
-  <p>
-  <strong>Official Website:</strong>
-  <a href="{{ scheme.official_link }}" target="_blank">
-    {{ scheme.official_link }}
-  </a>
-</p>
+    </div>
 </div>
 
 {% endblock %}

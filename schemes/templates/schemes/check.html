@@ -2,187 +2,347 @@
 {% block content %}
 
 <!-- PAGE HEADER -->
-<div class="text-center mb-5">
-  <h1 class="fw-bold">Rural Government Scheme Eligibility Engine</h1>
-  <p class="text-muted">
-    Find out which government schemes you qualify for based on your personal details.
+<style>
+    .stepper-nav .nav-link {
+        background-color: #f3f4f6 !important;
+        color: #9ca3af !important;
+        border: 2px solid #fff !important;
+        transition: all 0.3s ease;
+    }
+    .stepper-nav .nav-link.active {
+        background-color: var(--color-primary) !important;
+        color: #fff !important;
+        box-shadow: 0 4px 15px rgba(22, 163, 74, 0.3) !important;
+    }
+    .icon-input input, .icon-input select {
+        padding-left: 2.5rem !important;
+    }
+</style>
+
+<div class="text-center mb-5 mt-4">
+  <div class="d-inline-flex align-items-center justify-content-center bg-primary bg-opacity-10 text-primary rounded-circle mb-3 shadow-sm border border-opacity-10" style="width: 72px; height: 72px;">
+    <i class="bi bi-clipboard2-check-fill fs-2"></i>
+  </div>
+  <h2 class="fw-bold text-dark tracking-wide">
+    {% if request.session.lang == "mr" %}
+      पात्रता तपासा
+    {% elif request.session.lang == "hi" %}
+      पात्रता जांचें
+    {% else %}
+      Check Scheme Eligibility
+    {% endif %}
+  </h2>
+  <p class="text-secondary mx-auto fw-medium mt-2" style="max-width: 500px; line-height: 1.6;">
+    Please provide your accurate details below. Our engine will check them against all available government schemes.
   </p>
 </div>
 
 
-<!-- ELIGIBILITY FORM -->
-<div class="row justify-content-center">
-<div class="col-md-8">
+<!-- ELIGIBILITY FORM WIZARD -->
+<div class="row justify-content-center mb-5">
+  <div class="col-md-8 col-lg-7">
+      <div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+          
+          <!-- Wizard Tabs (Visual Only, controlled by JS buttons) -->
+          <div class="card-header bg-white border-bottom border-light-subtle pt-4 pb-3">
+              <div class="d-flex justify-content-between position-relative mx-auto mt-2 mb-3" style="max-width: 400px;">
+                  <!-- Connecting Line -->
+                  <div class="position-absolute top-50 start-0 w-100 translate-middle-y" style="height: 3px; background-color: #f3f4f6; z-index: 0;"></div>
+                  <div class="position-absolute top-50 start-0 translate-middle-y bg-primary transition-all" id="stepperLine" style="height: 3px; width: 0%; z-index: 0; transition: width 0.3s ease;"></div>
+                  
+                  <ul class="nav nav-pills w-100 d-flex justify-content-between position-relative z-1 stepper-nav" id="wizardTabs" role="tablist" style="margin-bottom: 0;">
+                      <li class="nav-item text-center position-relative" role="presentation">
+                          <button class="nav-link active rounded-circle d-flex align-items-center justify-content-center fw-bold fs-5 shadow-sm" style="width: 44px; height: 44px; padding: 0; margin: 0 auto;" id="step1-tab" data-bs-toggle="tab" data-bs-target="#step1" type="button" role="tab" aria-selected="true" disabled>1</button>
+                          <small class="d-block mt-2 fw-bold text-dark position-absolute start-50 translate-middle-x" style="width: 60px;">Basics</small>
+                      </li>
+                      <li class="nav-item text-center position-relative" role="presentation">
+                          <button class="nav-link rounded-circle d-flex align-items-center justify-content-center fw-bold fs-5 shadow-sm" style="width: 44px; height: 44px; padding: 0; margin: 0 auto;" id="step2-tab" data-bs-toggle="tab" data-bs-target="#step2" type="button" role="tab" aria-selected="false" disabled>2</button>
+                          <small class="d-block mt-2 fw-medium text-muted position-absolute start-50 translate-middle-x" style="width: 60px;" id="step2-label">Details</small>
+                      </li>
+                      <li class="nav-item text-center position-relative" role="presentation">
+                          <button class="nav-link rounded-circle d-flex align-items-center justify-content-center fw-bold fs-5 shadow-sm" style="width: 44px; height: 44px; padding: 0; margin: 0 auto;" id="step3-tab" data-bs-toggle="tab" data-bs-target="#step3" type="button" role="tab" aria-selected="false" disabled>3</button>
+                          <small class="d-block mt-2 fw-medium text-muted position-absolute start-50 translate-middle-x" style="width: 80px;" id="step3-label">Location</small>
+                      </li>
+                  </ul>
+              </div>
+          </div>
 
-{% if request.session.lang == "mr" %}
-  <h3>पात्रता तपासा</h3>
-{% elif request.session.lang == "hi" %}
-  <h3>पात्रता जांचें</h3>
-{% else %}
-  <h3>Check Scheme Eligibility</h3>
+          <form method="POST" id="eligibilityForm">
+          {% csrf_token %}
+          
+          <div class="card-body p-4 p-md-5 tab-content" id="wizardTabsContent">
+              
+              <!-- STEP 1 -->
+              <div class="tab-pane fade show active mt-2" id="step1" role="tabpanel" aria-labelledby="step1-tab">
+                  <h5 class="fw-bold mb-4 text-dark text-center">Basic Information</h5>
+                  
+                  <div class="row g-4 mb-4">
+                      <div class="col-md-6">
+                          <label class="form-label fw-medium text-secondary small">Annual Income (₹)</label>
+                          <div class="position-relative icon-input">
+                              <i class="bi bi-currency-rupee position-absolute top-50 start-0 translate-middle-y ms-3 text-muted z-1"></i>
+                              {{ form.income }}
+                          </div>
+                      </div>
+                      <div class="col-md-6">
+                          <label class="form-label fw-medium text-secondary small">Age</label>
+                          <div class="position-relative icon-input">
+                              <i class="bi bi-person position-absolute top-50 start-0 translate-middle-y ms-3 text-muted z-1"></i>
+                              {{ form.age }}
+                          </div>
+                      </div>
+                  </div>
+                  
+                  <div class="mb-4">
+                      <label class="form-label fw-medium text-secondary small">Gender</label>
+                      <div class="position-relative icon-input">
+                          <i class="bi bi-gender-ambiguous position-absolute top-50 start-0 translate-middle-y ms-3 text-muted z-1"></i>
+                          {{ form.gender }}
+                      </div>
+                  </div>
+
+                  <div class="d-flex justify-content-end mt-5">
+                      <button type="button" class="btn btn-primary px-5 rounded-pill shadow-soft" onclick="nextTab('step2-tab')">Next Step <i class="bi bi-arrow-right ms-2 fw-bold"></i></button>
+                  </div>
+              </div>
+
+              <!-- STEP 2 -->
+              <div class="tab-pane fade mt-2" id="step2" role="tabpanel" aria-labelledby="step2-tab">
+                  <h5 class="fw-bold mb-4 text-dark text-center">Work & Assets</h5>
+                  
+                  <div class="mb-4">
+                      <label class="form-label fw-medium text-secondary small">Occupation</label>
+                      <div class="position-relative icon-input">
+                          <i class="bi bi-briefcase position-absolute top-50 start-0 translate-middle-y ms-3 text-muted z-1"></i>
+                          {{ form.occupation }}
+                      </div>
+                  </div>
+                  <div class="mb-4">
+                      <label class="form-label fw-medium text-secondary small">Land Ownership</label>
+                      <div class="position-relative icon-input">
+                          <i class="bi bi-map position-absolute top-50 start-0 translate-middle-y ms-3 text-muted z-1"></i>
+                          {{ form.land_ownership }}
+                      </div>
+                  </div>
+                  <div class="mb-4">
+                      <label class="form-label fw-medium text-secondary small">Disability Status</label>
+                      <div class="position-relative icon-input">
+                          <i class="bi bi-universal-access position-absolute top-50 start-0 translate-middle-y ms-3 text-muted z-1"></i>
+                          {{ form.disability_status }}
+                      </div>
+                  </div>
+
+                  <div class="d-flex justify-content-between mt-5">
+                      <button type="button" class="btn btn-outline-secondary bg-white px-4 rounded-pill" onclick="prevTab('step1-tab')"><i class="bi bi-arrow-left me-2 fw-bold"></i> Back</button>
+                      <button type="button" class="btn btn-primary px-5 rounded-pill shadow-soft" onclick="nextTab('step3-tab')">Next Step <i class="bi bi-arrow-right ms-2 fw-bold"></i></button>
+                  </div>
+              </div>
+
+              <!-- STEP 3 -->
+              <div class="tab-pane fade mt-2" id="step3" role="tabpanel" aria-labelledby="step3-tab">
+                  <h5 class="fw-bold mb-4 text-dark text-center">Location Details</h5>
+                  
+                  <div class="mb-5">
+                      <label class="form-label fw-medium text-secondary small">State</label>
+                      <div class="position-relative icon-input">
+                          <i class="bi bi-geo-alt position-absolute top-50 start-0 translate-middle-y ms-3 text-muted z-1"></i>
+                          {{ form.state }}
+                      </div>
+                  </div>
+                  
+                  <div class="bg-primary bg-opacity-10 border border-primary border-opacity-10 p-4 rounded-4 mb-4 d-flex align-items-center shadow-sm">
+                      <i class="bi bi-info-circle-fill text-primary fs-3 me-3"></i>
+                      <small class="text-primary fw-medium" style="line-height: 1.5;">By clicking submit, the eligibility engine will process these details against all available scheme rules instantly.</small>
+                  </div>
+
+                  <div class="d-flex justify-content-between mt-5">
+                      <button type="button" class="btn btn-outline-secondary bg-white px-4 rounded-pill" onclick="prevTab('step2-tab')"><i class="bi bi-arrow-left me-2 fw-bold"></i> Back</button>
+                      <button type="submit" class="btn btn-primary px-5 rounded-pill shadow-soft fw-bold hover-lift">Check Eligibility <i class="bi bi-stars ms-2"></i></button>
+                  </div>
+              </div>
+
+          </div>
+          </form>
+
+      </div>
+  </div>
+</div>
+
+<!-- JS for Wizard Navigation -->
+<script>
+function updateStepperState() {
+    let step1Active = document.getElementById('step1-tab').classList.contains('active');
+    let step2Active = document.getElementById('step2-tab').classList.contains('active');
+    let step3Active = document.getElementById('step3-tab').classList.contains('active');
+    
+    let line = document.getElementById('stepperLine');
+    if (step3Active) {
+        line.style.width = '100%';
+        document.getElementById('step2-label').classList.replace('text-muted', 'text-dark');
+        document.getElementById('step3-label').classList.replace('text-muted', 'text-dark');
+        document.getElementById('step2-label').classList.add('fw-bold');
+        document.getElementById('step3-label').classList.add('fw-bold');
+    } else if (step2Active) {
+        line.style.width = '50%';
+        document.getElementById('step2-label').classList.replace('text-muted', 'text-dark');
+        document.getElementById('step2-label').classList.add('fw-bold');
+        document.getElementById('step3-label').classList.replace('text-dark', 'text-muted');
+        document.getElementById('step3-label').classList.remove('fw-bold');
+    } else {
+        line.style.width = '0%';
+        document.getElementById('step2-label').classList.replace('text-dark', 'text-muted');
+        document.getElementById('step3-label').classList.replace('text-dark', 'text-muted');
+        document.getElementById('step2-label').classList.remove('fw-bold');
+        document.getElementById('step3-label').classList.remove('fw-bold');
+    }
+}
+
+function nextTab(tabId) {
+    let nextTabEl = document.getElementById(tabId);
+    let tab = new bootstrap.Tab(nextTabEl);
+    nextTabEl.removeAttribute('disabled');
+    tab.show();
+    setTimeout(updateStepperState, 50);
+}
+function prevTab(tabId) {
+    let prevTabEl = document.getElementById(tabId);
+    let tab = new bootstrap.Tab(prevTabEl);
+    prevTabEl.removeAttribute('disabled');
+    tab.show();
+    setTimeout(updateStepperState, 50);
+}
+</script>
+
+{% if show_results %}
+
+<!-- SUMMARY AND RESULTS SECTION -->
+<div id="results" class="bg-white p-4 p-md-5 rounded-5 shadow-sm border mb-5 mt-5">
+    
+    <!-- Success Alert -->
+    <div class="alert alert-success d-flex align-items-center mb-5 border-0 shadow-sm rounded-4" role="alert">
+        <i class="bi bi-check-circle-fill me-3 fs-3"></i>
+        <div>
+            <h5 class="alert-heading fw-bold mb-1">Results Generated Successfully!</h5>
+            <p class="mb-0 small">Based on your details, here are the schemes you were checked against.</p>
+        </div>
+    </div>
+    
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-5 border-bottom pb-4">
+        <div>
+            <h3 class="fw-bold mb-1">Evaluation Results</h3>
+            <p class="text-muted small mb-0">Based on the details provided</p>
+        </div>
+        <div class="d-flex gap-2 mt-3 mt-md-0">
+            <div class="badge bg-success bg-opacity-10 text-success px-3 py-2 rounded-pill fw-medium border border-success border-opacity-25">
+                {{ eligible_count }} Eligible
+            </div>
+            <div class="badge bg-danger bg-opacity-10 text-danger px-3 py-2 rounded-pill fw-medium border border-danger border-opacity-25">
+                {{ not_eligible_count }} Not Eligible
+            </div>
+            <div class="badge bg-secondary bg-opacity-10 text-secondary px-3 py-2 rounded-pill fw-medium border border-secondary border-opacity-25">
+                {{ results|length }} Checked
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row g-4">
+    {% for result in results %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-soft border-0 {% if result.is_eligible %}border-start border-primary border-5{% else %}border-start border-danger border-5{% endif %} hover-lift position-relative overflow-hidden">
+                
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <h5 class="fw-bold text-dark lh-sm mb-0 pe-2">{{ result.scheme_name }}</h5>
+                        {% if result.is_eligible %}
+                            <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;" title="Eligible">
+                                <i class="bi bi-check-lg fs-5 fw-bold"></i>
+                            </div>
+                        {% else %}
+                            <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 36px; height: 36px;" title="Not Eligible">
+                                <i class="bi bi-x-lg fs-5 fw-bold"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                
+                    <p class="text-muted small mb-4 line-clamp-3 flex-grow-1" style="min-height: 4.5rem; line-height: 1.6;">
+                        {% if request.session.lang == "mr" and result.scheme.description_mr %}
+                          {{ result.scheme.description_mr }}
+                        {% elif request.session.lang == "hi" and result.scheme.description_hi %}
+                          {{ result.scheme.description_hi }}
+                        {% else %}
+                          {{ result.description}}
+                        {% endif %}
+                    </p>
+
+                    <div class="bg-light rounded-4 p-3 mb-4 shadow-sm border border-light-subtle">
+                        <h6 class="fw-bold small text-muted mb-3 text-uppercase tracking-wide" style="font-size: 0.65rem;">Rule Evaluation</h6>
+                        <ul class="list-unstyled mb-0 small">
+                            {% for rule in result.rules %}
+                                <li class="d-flex justify-content-between align-items-center py-2 {% if not forloop.last %}border-bottom border-light-subtle{% endif %}">
+                                    <span class="text-secondary fw-medium text-capitalize">
+                                        {{ rule.field_name|title }}
+                                    </span>
+                                    <span class="d-flex align-items-center">
+                                        <span class="text-dark font-monospace me-2 small fw-bold">
+                                            {% if rule.operator == "eq" %}={% elif rule.operator == "lte" %}≤{% elif rule.operator == "gte" %}≥{% elif rule.operator == "lt" %}<{% elif rule.operator == "gt" %}>{% endif %}
+                                            {{ rule.value }}
+                                        </span>
+                                        {% if rule.passed %}
+                                            <i class="bi bi-check-circle-fill text-primary" style="font-size: 1.1rem;"></i>
+                                        {% else %}
+                                            <i class="bi bi-x-circle-fill text-danger text-opacity-75" style="font-size: 1.1rem;"></i>
+                                        {% endif %}
+                                    </span>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <a href="/scheme/{{ result.scheme_id }}/" class="btn {% if result.is_eligible %}btn-primary{% else %}btn-outline-secondary bg-white text-dark{% endif %} w-100 rounded-pill fw-bold shadow-sm">
+                        View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+
+    <!-- DOWNLOAD REPORT -->
+    <div class="mt-5 text-center">
+        <a href="{% url 'download_report' %}" class="btn btn-warning btn-lg rounded-pill px-5 shadow fw-bold text-dark d-inline-flex align-items-center">
+            <i class="bi bi-file-earmark-arrow-down-fill me-2 fs-5"></i> Download PDF Report
+        </a>
+    </div>
+
+</div>
+
 {% endif %}
 
-<div class="card shadow-lg p-4">
-
-<form method="POST">
-{% csrf_token %}
-
-<div class="row">
-
-<div class="col-md-6 mb-3">
-<label class="form-label">Annual Income</label>
-{{ form.income }}
-</div>
-
-<div class="col-md-6 mb-3">
-<label class="form-label">Age</label>
-{{ form.age }}
-</div>
-
-</div>
-
-<div class="mb-3">
-<label class="form-label">Gender</label>
-{{ form.gender }}
-</div>
-
-<div class="mb-3">
-<label class="form-label">State</label>
-{{ form.state }}
-</div>
-
-<div class="mb-3">
-<label class="form-label">Occupation</label>
-{{ form.occupation }}
-</div>
-
-<div class="mb-3">
-<label class="form-label">Land Ownership</label>
-{{ form.land_ownership }}
-</div>
-
-<div class="mb-3">
-<label class="form-label">Disability Status</label>
-{{ form.disability_status }}
-</div>
-
-<button class="btn btn-primary w-100">
-Check Eligibility
-</button>
-
-</form>
-
-</div>
-</div>
-</div>
-
-
-{% if results %}
-
-<!-- SUMMARY -->
-<div class="alert alert-info mt-5">
-
-<h5 class="mb-2">Eligibility Summary</h5>
-
-Eligible Schemes: <strong>{{ eligible_count }}</strong> <br>
-Not Eligible Schemes: <strong>{{ not_eligible_count }}</strong> <br>
-Total Schemes Checked: <strong>{{ results|length }}</strong>
-
-</div>
-
-
-<!-- RESULTS -->
-<h3 class="mt-4 mb-3">Evaluation Results</h3>
-
-{% for result in results %}
-
-<div class="card mb-3 shadow-sm">
-
-<div class="card-body">
-
-<h5 class="card-title">
-
-{{ result.scheme_name }}
-
-{% if result.is_eligible %}
-<span class="badge bg-success ms-2">Eligible</span>
-{% else %}
-<span class="badge bg-danger ms-2">Not Eligible</span>
-{% endif %}
-
-</h5>
-
-<p class="text-muted">
-
-{% if request.session.lang == "mr" and result.scheme.description_mr %}
-  {{ result.scheme.description_mr }}
-{% elif request.session.lang == "hi" and result.scheme.description_hi %}
-  {{ result.scheme.description_hi }}
-{% else %}
-  {{ result.description}}
-{% endif %}
-
-</p>
-
-
-<ul class="list-group list-group-flush">
-
-{% for rule in result.rules %}
-
-<li class="list-group-item d-flex justify-content-between align-items-center">
-
-<span>
-
-<strong>{{ rule.field_name|title }}</strong>
-
-{% if rule.operator == "eq" %}
-=
-{% elif rule.operator == "lte" %}
-≤
-{% elif rule.operator == "gte" %}
-≥
-{% elif rule.operator == "lt" %}
-<
-{% elif rule.operator == "gt" %}
->
-{% endif %}
-
-{{ rule.value }}
-
-</span>
-
-{% if rule.passed %}
-<span class="badge bg-success">Passed</span>
-{% else %}
-<span class="badge bg-danger">Failed</span>
-{% endif %}
-
-</li>
-
-{% endfor %}
-
-</ul>
-
-
-<a href="/scheme/{{ result.scheme_id }}/" class="btn btn-outline-primary btn-sm mt-3">
-View Details
-</a>
-
-</div>
-</div>
-
-{% endfor %}
-
-
-<!-- DOWNLOAD REPORT -->
-<div class="mt-4">
-
-<a href="{% url 'download_report' %}" class="btn btn-success">
-Download Eligibility Report (PDF)
-</a>
-
-</div>
-
+{% if show_results %}
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const resultsSection = document.getElementById("results");
+        if (resultsSection) {
+            // Wait for rendering to complete
+            setTimeout(function() {
+                // Get the navbar height (sticky-top)
+                const navbar = document.querySelector('.navbar.sticky-top');
+                const navbarHeight = navbar ? navbar.offsetHeight : 80; // Default fallback offset
+                
+                // Calculate the exact position of the results section
+                const elementPosition = resultsSection.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - navbarHeight - 20; // 20px extra padding
+                
+                // Perform smooth scroll
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+            }, 150);
+        }
+    });
+</script>
 {% endif %}
 
 {% endblock %}

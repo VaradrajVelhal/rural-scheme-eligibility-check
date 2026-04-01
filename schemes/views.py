@@ -14,6 +14,10 @@ from django.contrib.auth import login
 from django.views.decorators.cache import never_cache
 from django.utils.decorators import method_decorator
 from django.contrib.auth import logout
+from django.contrib.auth.decorators import user_passes_test
+
+def is_admin(user):
+    return user.is_staff or user.is_superuser
 
 
 
@@ -84,13 +88,14 @@ def check_scheme(request):
 
             # Save history (your existing logic)
             for result in results:
-                EligibilityCheck.objects.update_or_create(
+                EligibilityCheck.objects.create(
                     user=request.user,
                     scheme=result["scheme"],
-                    defaults={"is_eligible": result["is_eligible"]}
+                    is_eligible=result["is_eligible"]
                 )
+                print(f"DEBUG: Saved EligibilityCheck for {result['scheme'].name}")
 
-            return redirect("check_scheme")   # 🔥 IMPORTANT
+            return redirect("check_scheme")   # IMPORTANT
 
     else:
         # GET request → load from session
@@ -113,15 +118,18 @@ def check_scheme(request):
     if results:
         eligible_count = sum(1 for r in results if r["is_eligible"])
         not_eligible_count = len(results) - eligible_count
+        show_results = True
     else:
         eligible_count = 0
         not_eligible_count = 0
+        show_results = False
 
     return render(request, "schemes/check.html", {
         "form": form,
         "results": results,
         "eligible_count": eligible_count,
         "not_eligible_count": not_eligible_count,
+        "show_results": show_results,
     })
 
 # -------------------------------
@@ -132,9 +140,7 @@ def check_scheme(request):
 @login_required(login_url='login')
 def dashboard(request):
 
-    checks = EligibilityCheck.objects.filter(
-        user=request.user
-    ).order_by("-checked_at")
+    checks = EligibilityCheck.objects.filter(user=request.user).order_by('-checked_on')
 
     return render(request, "schemes/dashboard.html", {
         "checks": checks
@@ -211,6 +217,7 @@ def download_report(request):
 # -------------------------------
 
 @never_cache
+@user_passes_test(is_admin, login_url='dashboard')
 @login_required(login_url='login')
 def analytics_dashboard(request):
 
@@ -221,7 +228,7 @@ def analytics_dashboard(request):
         EligibilityCheck.objects
         .values("scheme__name")
         .annotate(total=Count("id"))
-        .order_by("-total")
+        .order_by("-total")[:5]
     )
 
     eligible_count = EligibilityCheck.objects.filter(is_eligible=True).count()
@@ -270,10 +277,19 @@ def scheme_detail(request, scheme_id):
     rules = scheme.eligibilityrule_set.all()
     documents = scheme.requireddocument_set.all()
 
+    # Get eligibility status from session if possible
+    is_eligible = None
+    session_results = request.session.get("results", [])
+    for r in session_results:
+        if isinstance(r, dict) and r.get("scheme_id") == scheme_id:
+            is_eligible = r.get("is_eligible")
+            break
+
     context = {
         "scheme": scheme,
         "rules": rules,
-        "documents": documents
+        "documents": documents,
+        "is_eligible": is_eligible
     }
 
     return render(request, "schemes/scheme_detail.html", context)

@@ -59,3 +59,16 @@ class RegisterForm(UserCreationForm):
 
         for field in self.fields.values():
             field.widget.attrs["class"] = "form-control"
+
+    def clean_password1(self):
+        password = self.cleaned_data.get("password1")
+        if password and len(password) < 8:
+            raise forms.ValidationError("Password must be at least 8 characters long.")
+        return password
+
+    def clean_password2(self):
+        password = self.cleaned_data.get("password1")
+        confirm_password = self.cleaned_data.get("password2")
+        if password and confirm_password and password != confirm_password:
+            raise forms.ValidationError("Passwords do not match.")
+        return confirm_password
