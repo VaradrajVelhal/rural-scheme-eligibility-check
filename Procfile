@@ -1,1 +1,1 @@
-web: gunicorn rural_scheme_check.wsgi
+web: gunicorn rural_scheme_engine.wsgi
