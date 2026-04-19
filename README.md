@@ -20,7 +20,7 @@ Users can:
 
 ---
 🚀 Live Demo  
-https://rural-scheme-eligibility-engine.onrender.com
+https://rural-scheme-eligibility-check.onrender.com
 
 
 ## Key Features
